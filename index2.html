@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 CHALETEO VARSITY - MARCADOR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería de Confeti para celebraciones -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        
+        body { 
+            background-color: #034b20; 
+            color: #f8fafc; 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        .font-gaming { font-family: 'Orbitron', sans-serif; }
+        
+        .text-custom-yellow { color: #fdbc08; }
+        .bg-custom-yellow { background-color: #fdbc08; }
+        .border-custom-yellow { border-color: #fdbc08; }
+        
+        .text-custom-green { color: #034b20; }
+        .bg-custom-green { background-color: #034b20; }
+        .border-custom-green { border-color: #034b20; }
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 10;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .podium-1 { border-left: 4px solid #fdbc08; background: linear-gradient(90deg, rgba(253,188,8,0.1) 0%, rgba(15,23,42,0.45) 100%); }
+        .podium-2 { border-left: 4px solid #cbd5e1; background: linear-gradient(90deg, rgba(203,213,225,0.08) 0%, rgba(15,23,42,0.45) 100%); }
+        .podium-3 { border-left: 4px solid #b45309; background: linear-gradient(90deg, rgba(180,83,9,0.08) 0%, rgba(15,23,42,0.45) 100%); }
+
+        /* Estilos de la Ruleta */
+        .wheel-container {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto;
+        }
+        .roulette-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 6px solid #1e293b;
+            background: conic-gradient(
+                #ef4444 0deg 60deg,
+                #3b82f6 60deg 120deg,
+                #10b981 120deg 180deg,
+                #f59e0b 180deg 240deg,
+                #8b5cf6 240deg 300deg,
+                #ec4899 300deg 360deg
+            );
+            transition: transform 3s cubic-bezier(0.2, 0.8, 0.1, 1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
+        }
+        .wheel-pointer {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 20px solid #fdbc08;
+            z-index: 10;
+        }
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            background: #f8fafc;
+            border-radius: 50%;
+            border: 3px solid #1e293b;
+        }
+
+        /* Animaciones de Efecto de Pérdida (Shake & Red Flash) */
+        @keyframes flash-red {
+            0%, 100% { background-color: #034b20; }
+            50% { background-color: #7f1d1d; }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
+            20%, 40%, 60%, 80% { transform: translateX(6px); }
+        }
+        .effect-loser-bg { animation: flash-red 0.4s ease-in-out 2; }
+        .effect-loser-shake { animation: shake 0.5s ease-in-out; }
+
+        /* Animación Letras CH Flotantes */
+        @keyframes float-up {
+            0% {
+                transform: translateY(110vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.14;
+            }
+            90% {
+                opacity: 0.14;
+            }
+            100% {
+                transform: translateY(-15vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        .floating-letter {
+            position: absolute;
+            bottom: 0;
+            color: #fdbc08;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            user-select: none;
+            pointer-events: none;
+            z-index: 0;
+            animation: float-up linear infinite;
+        }
+    </style>
+</head>
+<body id="body-context" class="p-4 sm:p-6 max-w-md mx-auto pb-12 transition-colors duration-300">
+
+    <!-- CONTENEDOR PARA LAS LETRAS FLOTANTES -->
+    <div id="floating-bg" class="fixed inset-0 pointer-events-none overflow-hidden z-0"></div>
+
+    <!-- PANTALLA DE IDENTIFICACIÓN OBLIGATORIA (LOGIN SCREEN) -->
+    <div id="pantalla-login" class="fixed inset-0 bg-slate-950/95 z-50 flex items-center justify-center p-4 backdrop-blur-md hidden">
+        <div class="glass-panel w-full max-w-sm rounded-3xl p-6 border border-amber-500/20 text-center shadow-2xl space-y-6">
+            <header>
+                <h2 class="font-gaming text-2xl font-black text-custom-yellow tracking-wider uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                    BIENVENID@ A<br>CHALETEO VARSITY
+                </h2>
+                <div class="w-16 h-1 bg-custom-yellow mx-auto mt-3 rounded-full opacity-60"></div>
+            </header>
+            
+            <div class="space-y-2">
+                <label class="text-xs font-black text-slate-400 uppercase tracking-widest font-gaming block">¿Tú eres?</label>
+                <select id="select-identidad-global" class="w-full bg-slate-900 border border-slate-700 text-slate-200 text-sm font-bold rounded-xl px-3 py-3 uppercase font-gaming focus:outline-none focus:border-amber-500 shadow-inner">
+                    <option value="">-- SELECCIONA TU NOMBRE --</option>
+                </select>
+            </div>
+
+            <button onclick="guardarIdentidad()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-gaming font-black py-3.5 rounded-2xl text-xs uppercase tracking-wider transition-all active:scale-95 shadow-lg">
+                🚀 Entrar al Evento
+            </button>
+        </div>
+    </div>
+/* Fuerza que el login se vea en móviles */
+    #pantalla-login {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+</style>
+
+    <!-- TARJETA DE USUARIO LOGUEADO -->
+    <div id="user-badge" class="flex justify-between items-center mb-4 bg-slate-950/60 border border-slate-800 rounded-xl px-3 py-1.5 text-xs hidden relative z-10">
+        <p class="font-bold text-slate-300">👋 Jugador: <span id="badge-nombre" class="text-custom-yellow font-gaming uppercase font-black ml-1"></span></p>
+        <button onclick="borrarIdentidad()" class="text-[10px] text-red-400 font-bold hover:underline font-gaming uppercase tracking-wider">Cambiar</button>
+    </div>
+
+    <!-- CABECERA PRINCIPAL -->
+    <header class="text-center my-6 relative z-10">
+        <h1 class="font-gaming text-4xl font-black text-custom-yellow tracking-wider uppercase drop-shadow-[0_4px_6px_rgba(0,0,0,0.7)]">
+            CHALETEO VARSITY
+        </h1>
+        <div class="flex items-center justify-center gap-2 mt-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <p class="text-xs font-semibold uppercase tracking-widest text-slate-300 font-gaming drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">Live Scoreboard</p>
+        </div>
+    </header>
+
+    <!-- MARCADOR GLOBAL DE EQUIPOS -->
+    <section class="glass-panel rounded-3xl p-4 shadow-2xl mb-5 border border-slate-700/50">
+        <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest font-gaming text-center mb-3">Puntuación de Equipos</h2>
+        <div class="grid grid-cols-2 gap-4 text-center relative">
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-gaming font-black text-slate-500 text-xs bg-slate-900 px-2 py-0.5 rounded-md border border-slate-800">VS</div>
+            <div class="bg-slate-950/40 rounded-2xl p-3 border border-amber-500/10 flex flex-col items-center justify-center">
+                <div class="w-5 h-5 rounded-full bg-custom-yellow shadow-[0_0_10px_rgba(253,188,8,0.4)] border border-amber-400 mb-2"></div>
+                <div id="score-amarillo" class="font-gaming font-black text-4xl text-custom-yellow">0</div>
+            </div>
+            <div class="bg-slate-950/40 rounded-2xl p-3 border border-emerald-500/10 flex flex-col items-center justify-center">
+                <div class="w-5 h-5 rounded-full bg-custom-green shadow-[0_0_10px_rgba(3,75,32,0.4)] border border-emerald-500/40 mb-2"></div>
+                <div id="score-verde" class="font-gaming font-black text-4xl text-emerald-400">0</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TARJETA DE PERFIL PERSONAL GRANDE -->
+    <section id="mi-perfil-panel" class="glass-panel rounded-3xl p-5 shadow-2xl mb-5 border border-amber-500/30 text-center relative overflow-hidden hidden">
+        <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-amber-500/5 rounded-full blur-xl"></div>
+        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest font-gaming mb-1">Tu Estado Actual</h3>
+        <div id="mi-perfil-nombre" class="font-gaming font-black text-3xl text-slate-100 uppercase tracking-wide drop-shadow-md">---</div>
+        <div class="flex items-center justify-center gap-2 mt-2 bg-slate-950/40 w-fit mx-auto px-5 py-1.5 rounded-2xl border border-slate-800/80">
+            <span class="text-2xl">🪙</span>
+            <span id="mi-perfil-tokens" class="font-gaming font-black text-2xl text-custom-yellow">0</span>
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-gaming ml-0.5">Tokens</span>
+        </div>
+    </section>
+
+    <!-- MINIJUEGO: LA RULETA COSTOSA -->
+    <section class="glass-panel rounded-3xl p-5 shadow-2xl mb-5 border border-slate-700/50 text-center">
+        <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest font-gaming mb-1">🎰 La Ruleta Varsity</h2>
+        <p class="text-[10px] font-bold text-amber-400 uppercase tracking-wider mb-4 font-gaming">🎯 COSTE: 10 TOKENS POR GIRO</p>
+        
+        <div class="wheel-container mb-4">
+            <div class="wheel-pointer"></div>
+            <div id="ruleta" class="roulette-wheel"></div>
+            <div class="wheel-center"></div>
+        </div>
+
+        <button id="btn-spin" onclick="girarRuleta()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-gaming font-black py-3 rounded-2xl text-xs uppercase tracking-wider active:scale-95 shadow-lg">
+            ⚡ Pagar 10 Tokens y Girar
+        </button>
+
+        <div id="resultado-ruleta" class="mt-4 p-3 bg-slate-950/50 border border-slate-800 rounded-xl hidden">
+            <p class="text-[10px] font-black text-custom-yellow uppercase tracking-widest font-gaming mb-1">Resultado obtenido:</p>
+            <p id="texto-premio" class="text-xs font-bold text-slate-100 uppercase tracking-wide mb-1"></p>
+            <span class="text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-md font-gaming animate-pulse">Esperando verificación del Admin...</span>
+        </div>
+    </section>
+
+    <!-- TABLA DE CONTROL DE CRÉDITOS -->
+    <main id="main-tabla-container" class="glass-panel rounded-3xl p-5 shadow-2xl space-y-3">
+        <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest font-gaming text-center mb-1">Estado de los Créditos</h2>
+        <div id="tabla-tokens" class="space-y-3">
+            <div class="text-center py-4 text-slate-400 font-medium flex flex-col items-center justify-center gap-3">
+                <svg class="animate-spin h-6 w-6 text-custom-yellow" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
+        </div>
+    </main>
+
+    <!-- BOTÓN DE ACCESO ADMIN -->
+    <div class="text-center my-8 relative z-10">
+        <button id="btn-login" onclick="toggleAdminPanel()" class="glass-panel text-slate-200 font-gaming text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-xl active:scale-95">
+            🔒 Panel de control
+        </button>
+    </div>
+
+    <!-- PANEL DE ADMINISTRADOR -->
+    <section id="panel-admin" class="border-t border-slate-700/40 pt-6 hidden space-y-6 relative z-10">
+        <h2 class="font-gaming text-xl font-black text-custom-yellow tracking-wide text-center uppercase">🛠 Panel de Control</h2>
+        
+        <!-- COLA DE VALIDACIÓN DE LA RULETA -->
+        <div class="glass-panel p-4 rounded-2xl shadow-lg border border-amber-500/20">
+            <h3 class="text-xs font-bold text-amber-400 mb-3 uppercase tracking-widest font-gaming">🔔 Cola de Validación de Ruleta</h3>
+            <div id="cola-verificacion" class="space-y-3">
+                <p class="text-center py-2 text-slate-500 font-gaming text-xs uppercase">No hay giros pendientes</p>
+            </div>
+        </div>
+
+        <!-- MODIFICAR MARCADOR DE EQUIPOS -->
+        <div class="glass-panel p-4 rounded-2xl shadow-lg">
+            <h3 class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-widest font-gaming">🕹 Control del Marcador (VS)</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="text-center bg-slate-950/40 p-2 rounded-xl border border-amber-500/10 flex flex-col items-center">
+                    <div class="w-3 h-3 rounded-full bg-custom-yellow mb-2"></div>
+                    <div class="flex gap-1 justify-center">
+                        <button onclick="modificarMarcador('amarillo', -1)" class="bg-red-950/40 border border-red-900/40 text-red-400 px-3 py-1 rounded-lg font-gaming font-bold text-xs">-1</button>
+                        <button onclick="modificarMarcador('amarillo', 1)" class="bg-emerald-950/40 border border-emerald-900/40 text-emerald-400 px-3 py-1 rounded-lg font-gaming font-bold text-xs">+1</button>
+                    </div>
+                </div>
+                <div class="text-center bg-slate-950/40 p-2 rounded-xl border border-emerald-500/10 flex flex-col items-center">
+                    <div class="w-3 h-3 rounded-full bg-custom-green border border-emerald-500/30 mb-2"></div>
+                    <div class="flex gap-1 justify-center">
+                        <button onclick="modificarMarcador('verde', -1)" class="bg-red-950/40 border border-red-900/40 text-red-400 px-3 py-1 rounded-lg font-gaming font-bold text-xs">-1</button>
+                        <button onclick="modificarMarcador('verde', 1)" class="bg-emerald-950/40 border border-emerald-900/40 text-emerald-400 px-3 py-1 rounded-lg font-gaming font-bold text-xs">+1</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AGREGAR PERSONA -->
+        <div class="glass-panel p-4 rounded-2xl shadow-lg">
+            <h3 class="text-xs font-bold text-slate-400 mb-3 uppercase tracking-widest font-gaming">👤 Registrar Participante</h3>
+            <div class="flex gap-2">
+                <input type="text" id="nuevo-nombre" placeholder="Nombre del jugador" class="w-full bg-slate-950/60 border border-slate-700 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 uppercase font-gaming">
+                <button onclick="agregarUsuario()" class="bg-custom-yellow text-slate-950 font-gaming font-black px-5 py-2.5 rounded-xl text-xs uppercase shadow-md">Añadir</button>
+            </div>
+        </div>
+
+        <!-- CONTROLES CRÉDITOS PERSONALES -->
+        <div class="space-y-3">
+            <h3 class="text-xs font-bold text-slate-300 mb-2 uppercase tracking-widest font-gaming px-1">⚙️ Cobros en Barra (Bajar saldo)</h3>
+            <div id="controles-admin" class="space-y-3"></div>
+        </div>
+    </section>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getDatabase, ref, onValue, update, push, set, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfSS6u2ydNPhC_70Cu-ofOTPu-RC2P_eE",
+            authDomain: "chaleteo-fb8a0.firebaseapp.com",
+            databaseURL: "https://chaleteo-fb8a0-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "chaleteo-fb8a0",
+            storageBucket: "chaleteo-fb8a0.appspot.com",
+            messagingSenderId: "102080696897",
+            appId: "1:102080696897:web:05420de85fbd886836ecc0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        
+        const dbRef = ref(db, 'usuarios');
+        const marcadorRef = ref(db, 'marcador_global');
+        const ruletaColaRef = ref(db, 'solicitudes_ruleta');
+
+        const ADMIN_PASS = "2812"; 
+        let esAdmin = false;
+        let usuariosGlobales = {};
+        let miUsuarioId = localStorage.getItem('chaleteo_user_id') || "";
+
+        const OPCIONES_RULETA = [
+            { texto: "🍹 COCKTAIL GRATIS", tipo: "bueno" },
+            { texto: "🥃 CHUPITO GRATIS", tipo: "bueno" },
+            { texto: "🍿 PRODUCTO GRATIS", tipo: "bueno" },
+            { texto: "💀 LOSER", tipo: "malo" },
+            { texto: "🙌 INVITA A ALGUIEN A UN COCKTAIL", tipo: "bueno" },
+            { texto: "🎯 INVITA A ALGUIEN A UN CHUPITO", tipo: "bueno" }
+        ];
+
+        let enGiro = false;
+
+        // GENERADOR DE LETRAS CH FLOTANTES EN EL FONDO (MÁS CANTIDAD)
+        function crearLetrasFondo() {
+            const bgContainer = document.getElementById('floating-bg');
+            const totalLetras = 24; // Aumentado a 24 letras flotantes simultáneas
+
+            for (let i = 0; i < totalLetras; i++) {
+                const letra = document.createElement('div');
+                letra.classList.add('floating-letter');
+                letra.innerText = 'CH';
+                
+                // Mayor rango de tamaño para dar profundidad (entre 18px y 65px)
+                const size = Math.floor(Math.random() * 47) + 18; 
+                const leftPos = Math.random() * 100; 
+                // Velocidades asíncronas para que no vayan en fila india
+                const duration = Math.floor(Math.random() * 14) + 12; 
+                // Delay negativo aleatorio para un spawn instantáneo homogéneo
+                const delay = Math.random() * -25; 
+
+                letra.style.fontSize = `${size}px`;
+                letra.style.left = `${leftPos}%`;
+                letra.style.animationDuration = `${duration}s`;
+                letra.style.animationDelay = `${delay}s`;
+
+                bgContainer.appendChild(letra);
+            }
+        }
+
+        // Ejecutar la creación al cargar el documento
+        document.addEventListener('DOMContentLoaded', crearLetrasFondo);
+
+        function verificarBloqueoIdentidad() {
+            const pantalla = document.getElementById('pantalla-login');
+            const badge = document.getElementById('user-badge');
+            const badgeNombre = document.getElementById('badge-nombre');
+            const panelPerfil = document.getElementById('mi-perfil-panel');
+            const perfilNombre = document.getElementById('mi-perfil-nombre');
+            const perfilTokens = document.getElementById('mi-perfil-tokens');
+
+            if (!miUsuarioId) {
+                pantalla.classList.remove('hidden');
+                badge.classList.add('hidden');
+                panelPerfil.classList.add('hidden');
+            } else {
+                pantalla.classList.add('hidden');
+                if (usuariosGlobales[miUsuarioId]) {
+                    const usuarioActivo = usuariosGlobales[miUsuarioId];
+                    
+                    badgeNombre.innerText = usuarioActivo.nombre;
+                    badge.classList.remove('hidden');
+                    
+                    perfilNombre.innerText = usuarioActivo.nombre;
+                    perfilTokens.innerText = usuarioActivo.tokens;
+                    panelPerfil.classList.remove('hidden');
+                }
+            }
+        }
+
+        window.guardarIdentidad = function() {
+            const select = document.getElementById('select-identidad-global');
+            const elegido = select.value;
+
+            if (!elegido) {
+                alert("❌ Por favor, selecciona quién eres para continuar.");
+                return;
+            }
+
+            miUsuarioId = elegido;
+            localStorage.setItem('chaleteo_user_id', elegido);
+            verificarBloqueoIdentidad();
+        };
+
+        window.borrarIdentidad = function() {
+            if (confirm("¿Seguro que quieres cambiar tu identidad vinculada?")) {
+                localStorage.removeItem('chaleteo_user_id');
+                miUsuarioId = "";
+                document.getElementById('resultado-ruleta').classList.add('hidden');
+                verificarBloqueoIdentidad();
+            }
+        };
+
+        function ejecutarEfectoResultado(tipoPremio) {
+            const bodyContext = document.getElementById('body-context');
+            const contenedorTabla = document.getElementById('main-tabla-container');
+
+            if (tipoPremio === "bueno") {
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { y: 0.6, x: 0.2 }
+                });
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { y: 0.6, x: 0.8 }
+                });
+            } else if (tipoPremio === "malo") {
+                bodyContext.classList.add('effect-loser-bg');
+                contenedorTabla.classList.add('effect-loser-shake');
+
+                setTimeout(() => {
+                    bodyContext.classList.remove('effect-loser-bg');
+                    contenedorTabla.classList.remove('effect-loser-shake');
+                }, 1000);
+            }
+        }
+
+        window.girarRuleta = function() {
+            if (enGiro) return;
+
+            if (!miUsuarioId) {
+                verificarBloqueoIdentidad();
+                return;
+            }
+
+            const usuario = usuariosGlobales[miUsuarioId];
+            if (!usuario || usuario.tokens < 10) {
+                alert(`❌ No tienes tokens suficientes. El giro cuesta 10 y tienes ${usuario ? usuario.tokens : 0}.`);
+                return;
+            }
+
+            enGiro = true;
+            const wheel = document.getElementById('ruleta');
+            const btn = document.getElementById('btn-spin');
+            const boxResultado = document.getElementById('resultado-ruleta');
+            const textoPremio = document.getElementById('texto-premio');
+
+            btn.disabled = true;
+            boxResultado.classList.add('hidden');
+
+            const nuevoSaldoCobro = usuario.tokens - 10;
+            update(ref(db, `usuarios/${miUsuarioId}`), { tokens: nuevoSaldoCobro });
+
+            const vueltas = Math.floor(Math.random() * 5) + 5;
+            const gradosAleatorios = Math.floor(Math.random() * 360);
+            const totalGrados = (vueltas * 360) + gradosAleatorios;
+
+            wheel.style.transform = `rotate(${totalGrados}deg)`;
+
+            setTimeout(() => {
+                const anguloFinal = (360 - (gradosAleatorios % 360)) % 360;
+                const indiceOpcion = Math.floor(anguloFinal / 60);
+                const premioObtenido = OPCIONES_RULETA[indiceOpcion];
+
+                textoPremio.innerText = premioObtenido.texto;
+                boxResultado.classList.remove('hidden');
+
+                ejecutarEfectoResultado(premioObtenido.tipo);
+
+                const nuevaSolicitudRef = push(ruletaColaRef);
+                set(nuevaSolicitudRef, {
+                    usuarioId: miUsuarioId,
+                    nombreJugador: usuario.nombre,
+                    premioTexto: premioObtenido.texto,
+                    timestamp: Date.now()
+                });
+
+                enGiro = false;
+                btn.disabled = false;
+            }, 3000);
+        };
+
+        onValue(dbRef, (snapshot) => {
+            usuariosGlobales = snapshot.val() || {};
+            renderTabla(usuariosGlobales);
+            actualizarSelectLogin(usuariosGlobales);
+            verificarBloqueoIdentidad();
+            if (esAdmin) renderAdmin(usuariosGlobales);
+        });
+
+        onValue(marcadorRef, (snapshot) => {
+            const marcador = snapshot.val() || { amarillo: 0, verde: 0 };
+            document.getElementById('score-amarillo').innerText = marcador.amarillo;
+            document.getElementById('score-verde').innerText = marcador.verde;
+        });
+
+        onValue(ruletaColaRef, (snapshot) => {
+            if (esAdmin) renderColaVerificacion(snapshot.val() || {});
+        });
+
+        function actualizarSelectLogin(datos) {
+            const select = document.getElementById('select-identidad-global');
+            const valorActual = select.value;
+            
+            select.innerHTML = '<option value="">-- SELECCIONA TU NOMBRE --</option>';
+            Object.entries(datos)
+                .sort((a, b) => a[1].nombre.localeCompare(b[1].nombre))
+                .forEach(([id, usuario]) => {
+                    select.innerHTML += `<option value="${id}">${usuario.nombre}</option>`;
+                });
+
+            if (datos[valorActual]) select.value = valorActual;
+        }
+
+        function renderTabla(datos) {
+            const tabla = document.getElementById('tabla-tokens');
+            tabla.innerHTML = '';
+            
+            if (Object.keys(datos).length === 0) {
+                tabla.innerHTML = '<div class="text-center py-6 text-slate-400 font-gaming text-xs uppercase">Ningún jugador registrado</div>';
+                return;
+            }
+
+            const filtradosYOrdenados = Object.entries(datos)
+                .filter(([id, usuario]) => usuario.nombre.trim().toUpperCase() !== "ADRI")
+                .sort((a, b) => b[1].tokens - a[1].tokens);
+
+            if (filtradosYOrdenados.length === 0) {
+                tabla.innerHTML = '<div class="text-center py-6 text-slate-400 font-gaming text-xs uppercase">Ningún competidor visible</div>';
+                return;
+            }
+
+            filtradosYOrdenados.forEach(([id, usuario], index) => {
+                let podiumClass = "";
+                let medal = "";
+                if (index === 0) { podiumClass = "podium-1"; medal = "🥇 "; }
+                else if (index === 1) { podiumClass = "podium-2"; medal = "🥈 "; }
+                else if (index === 2) { podiumClass = "podium-3"; medal = "🥉 "; }
+
+                const esMiFila = id === miUsuarioId ? 'border-amber-400/50 bg-slate-900/60 shadow-[0_0_15px_rgba(253,188,8,0.1)]' : '';
+
+                tabla.innerHTML += `
+                    <div class="glass-card ${podiumClass} ${esMiFila} rounded-2xl px-4 py-3.5 flex justify-between items-center shadow-md">
+                        <div class="flex items-center gap-3">
+                            <span class="font-gaming font-bold text-xs text-slate-400 w-5">${index + 1}.</span>
+                            <span class="font-bold tracking-wide text-slate-100 uppercase text-sm">${medal}${usuario.nombre} ${id === miUsuarioId ? '<span class="text-[9px] bg-amber-500 text-slate-950 px-1 rounded font-gaming font-black ml-1">TÚ</span>' : ''}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-gaming font-black text-xl text-custom-yellow">${usuario.tokens}</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-gaming -mt-1">Tokens</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderColaVerificacion(solicitudes) {
+            const contenedor = document.getElementById('cola-verificacion');
+            contenedor.innerHTML = '';
+
+            if (Object.keys(solicitudes).length === 0) {
+                contenedor.innerHTML = '<p class="text-center py-2 text-slate-500 font-gaming text-xs uppercase">No hay giros pendientes</p>';
+                return;
+            }
+
+            Object.entries(solicitudes).forEach(([solicitudId, sol]) => {
+                contenedor.innerHTML += `
+                    <div class="bg-slate-950/60 border border-amber-500/30 rounded-xl p-3 flex flex-col justify-between items-start gap-2">
+                        <div>
+                            <p class="text-xs font-black text-slate-300 uppercase"><span class="text-custom-yellow">👤 JUGADOR:</span> ${sol.nombreJugador}</p>
+                            <p class="text-xs font-bold text-slate-100 mt-0.5"><span class="text-emerald-400">🎲 RESULTADO:</span> ${sol.premioTexto}</p>
+                        </div>
+                        <div class="flex gap-2 w-full mt-1">
+                            <button onclick="resolverRuleta('${solicitudId}', true)" class="w-1/2 bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-[10px] font-gaming font-black py-1.5 rounded-lg uppercase">✓ Aprobar</button>
+                            <button onclick="resolverRuleta('${solicitudId}', false)" class="w-1/2 bg-red-700 hover:bg-red-600 text-slate-100 text-[10px] font-gaming font-black py-1.5 rounded-lg uppercase">✗ Rechazar</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.resolverRuleta = function(solicitudId, aprobado) {
+            const solicitudRef = ref(db, `solicitudes_ruleta/${solicitudId}`);
+            remove(solicitudRef).catch((error) => {
+                console.error("Error eliminando la solicitud: ", error);
+            });
+        };
+
+        function renderAdmin(datos) {
+            const contenedor = document.getElementById('controles-admin');
+            contenedor.innerHTML = '';
+
+            Object.entries(datos).forEach(([id, usuario]) => {
+                contenedor.innerHTML += `
+                    <div class="glass-panel p-3.5 rounded-2xl border border-slate-700/30">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="font-bold text-slate-100 uppercase tracking-wide text-sm">${usuario.nombre} ${usuario.nombre.toUpperCase() === 'ADRI' ? '👁️‍🗨️ (OCULTO)' : ''}</span>
+                            <div class="bg-slate-950/60 px-3 py-1 rounded-xl border border-slate-800 font-gaming">
+                                <span class="text-xs text-slate-400 font-bold uppercase mr-1">Bolsa:</span>
+                                <span class="text-sm font-black text-custom-yellow">${usuario.tokens}</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-3 gap-1">
+                                <button onclick="modificarTokens('${id}', -1)" class="bg-red-950/40 text-red-300 font-gaming font-bold py-2 rounded-xl text-xs">-1</button>
+                                <button onclick="modificarTokens('${id}', -5)" class="bg-red-950/40 text-red-300 font-gaming font-bold py-2 rounded-xl text-xs">-5</button>
+                                <button onclick="modificarTokens('${id}', -10)" class="bg-red-950/40 text-red-300 font-gaming font-bold py-2 rounded-xl text-xs">-10</button>
+                            </div>
+                            <div class="grid grid-cols-3 gap-1">
+                                <button onclick="modificarTokens('${id}', 1)" class="bg-emerald-950/40 text-emerald-400 font-gaming font-bold py-2 rounded-xl text-xs">+1</button>
+                                <button onclick="modificarTokens('${id}', 5)" class="bg-emerald-950/40 text-emerald-400 font-gaming font-bold py-2 rounded-xl text-xs">+5</button>
+                                <button onclick="modificarTokens('${id}', 10)" class="bg-emerald-950/40 text-emerald-400 font-gaming font-bold py-2 rounded-xl text-xs">+10</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.modificarMarcador = function(equipo, cantidad) {
+            onValue(marcadorRef, (snapshot) => {
+                const actual = snapshot.val() || { amarillo: 0, verde: 0 };
+                const nuevoValor = Math.max(0, (actual[equipo] || 0) + cantidad);
+                update(ref(db), { [`marcador_global/${equipo}`]: nuevoValor });
+            }, { onlyOnce: true });
+        };
+
+        window.agregarUsuario = function() {
+            const input = document.getElementById('nuevo-nombre');
+            const nombre = input.value.trim().toUpperCase();
+            if (nombre === '') return;
+
+            const nuevaRamaRef = push(ref(db, 'usuarios'));
+            set(nuevaRamaRef, { nombre: nombre, tokens: 50 }).then(() => { input.value = ''; });
+        };
+
+        window.modificarTokens = function(id, cantidad) {
+            const tokenRef = ref(db, `usuarios/${id}`);
+            onValue(tokenRef, (snapshot) => {
+                const actual = snapshot.val().tokens;
+                const nuevoValor = Math.max(0, actual + cantidad);
+                update(ref(db), { [`usuarios/${id}/tokens`]: nuevoValor });
+            }, { onlyOnce: true });
+        };
+
+        window.toggleAdminPanel = function() {
+            const panel = document.getElementById('panel-admin');
+            const btn = document.getElementById('btn-login');
+
+            if (!esAdmin) {
+                const pass = prompt("Introduce la contraseña de administrador:");
+                if (pass === ADMIN_PASS) {
+                    esAdmin = true;
+                    panel.classList.remove('hidden');
+                    btn.innerText = "🔒 Cerrar Modo Admin";
+                    btn.classList.replace('glass-panel', 'bg-custom-yellow');
+                    btn.classList.add('text-slate-950');
+                    onValue(ruletaColaRef, (snapshot) => renderColaVerificacion(snapshot.val() || {}));
+                    onValue(dbRef, (snapshot) => renderAdmin(snapshot.val() || {}), { onlyOnce: true });
+                } else if (pass !== null) {
+                    alert("Contraseña incorrecta");
+                }
+            } else {
+                esAdmin = false;
+                panel.classList.add('hidden');
+                btn.innerText = "🔒 Panel de control";
+                btn.classList.remove('bg-custom-yellow', 'text-slate-950');
+                btn.classList.add('glass-panel');
+            }
+        };
+    </script>
+</body>
+</html>
