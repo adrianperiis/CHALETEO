@@ -302,21 +302,20 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+        import { getDatabase, ref, onValue, update, push, set, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDfSS6u2ydNPhC_70Cu-ofOTPu-RC2P_eE",
-    authDomain: "chaleteo-fb8a0.firebaseapp.com",
-    databaseURL: "https://chaleteo-fb8a0-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "chaleteo-fb8a0",
-    storageBucket: "chaleteo-fb8a0.appspot.com",
-    messagingSenderId: "102080696897",
-    appId: "1:102080696897:web:05420de85fbd886836ecc0",
-    measurementId: "G-2VXE5XKKY"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfSS6u2ydNPhC_70Cu-ofOTPu-RC2P_eE",
+            authDomain: "chaleteo-fb8a0.firebaseapp.com",
+            databaseURL: "https://chaleteo-fb8a0-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "chaleteo-fb8a0",
+            storageBucket: "chaleteo-fb8a0.appspot.com",
+            messagingSenderId: "102080696897",
+            appId: "1:102080696897:web:05420de85fbd886836ecc0"
+        };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
         
         const dbRef = ref(db, 'usuarios');
         const marcadorRef = ref(db, 'marcador_global');
@@ -329,27 +328,31 @@ const db = getDatabase(app);
 
         const OPCIONES_RULETA = [
             { texto: "🍹 COCKTAIL GRATIS", tipo: "bueno" },
-            { texto: "🥃 CH SHOT GRATIS", tipo: "bueno" },
+            { texto: "🥃 CHUPITO GRATIS", tipo: "bueno" },
             { texto: "🍿 PRODUCTO GRATIS", tipo: "bueno" },
             { texto: "💀 LOSER", tipo: "malo" },
-            { texto: "🙌 INVITA A ALGUIEN A UN COCKTAIL", tipo: "malo" },
-            { texto: "🎯 INVITA A ALGUIEN A UN CH SHOT", tipo: "malo" }
+            { texto: "🙌 INVITA A ALGUIEN A UN COCKTAIL", tipo: "bueno" },
+            { texto: "🎯 INVITA A ALGUIEN A UN CHUPITO", tipo: "bueno" }
         ];
 
         let enGiro = false;
 
+        // GENERADOR DE LETRAS CH FLOTANTES EN EL FONDO (MÁS CANTIDAD)
         function crearLetrasFondo() {
             const bgContainer = document.getElementById('floating-bg');
-            const totalLetras = 24;
+            const totalLetras = 24; // Aumentado a 24 letras flotantes simultáneas
 
             for (let i = 0; i < totalLetras; i++) {
                 const letra = document.createElement('div');
                 letra.classList.add('floating-letter');
                 letra.innerText = 'CH';
                 
+                // Mayor rango de tamaño para dar profundidad (entre 18px y 65px)
                 const size = Math.floor(Math.random() * 47) + 18; 
                 const leftPos = Math.random() * 100; 
+                // Velocidades asíncronas para que no vayan en fila india
                 const duration = Math.floor(Math.random() * 14) + 12; 
+                // Delay negativo aleatorio para un spawn instantáneo homogéneo
                 const delay = Math.random() * -25; 
 
                 letra.style.fontSize = `${size}px`;
@@ -361,6 +364,7 @@ const db = getDatabase(app);
             }
         }
 
+        // Ejecutar la creación al cargar el documento
         document.addEventListener('DOMContentLoaded', crearLetrasFondo);
 
         function verificarBloqueoIdentidad() {
