@@ -302,20 +302,21 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update, push, set, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDfSS6u2ydNPhC_70Cu-ofOTPu-RC2P_eE",
-            authDomain: "chaleteo-fb8a0.firebaseapp.com",
-            databaseURL: "https://chaleteo-fb8a0-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "chaleteo-fb8a0",
-            storageBucket: "chaleteo-fb8a0.appspot.com",
-            messagingSenderId: "102080696897",
-            appId: "1:102080696897:web:05420de85fbd886836ecc0"
-        };
+const firebaseConfig = {
+    apiKey: "AIzaSyDfSS6u2ydNPhC_70Cu-ofOTPu-RC2P_eE",
+    authDomain: "chaleteo-fb8a0.firebaseapp.com",
+    databaseURL: "https://chaleteo-fb8a0-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "chaleteo-fb8a0",
+    storageBucket: "chaleteo-fb8a0.appspot.com",
+    messagingSenderId: "102080696897",
+    appId: "1:102080696897:web:05420de85fbd886836ecc0",
+    measurementId: "G-2VXE5XKKY"
+};
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
         
         const dbRef = ref(db, 'usuarios');
         const marcadorRef = ref(db, 'marcador_global');
@@ -328,11 +329,11 @@
 
         const OPCIONES_RULETA = [
             { texto: "🍹 COCKTAIL GRATIS", tipo: "bueno" },
-            { texto: "🥃 CHUPITO GRATIS", tipo: "bueno" },
+            { texto: "🥃 CH SHOT GRATIS", tipo: "bueno" },
             { texto: "🍿 PRODUCTO GRATIS", tipo: "bueno" },
             { texto: "💀 LOSER", tipo: "malo" },
-            { texto: "🙌 INVITA A ALGUIEN A UN COCKTAIL", tipo: "neutro" },
-            { texto: "🎯 INVITA A ALGUIEN A UN CHUPITO", tipo: "neutro" }
+            { texto: "🙌 INVITA A ALGUIEN A UN COCKTAIL", tipo: "malo" },
+            { texto: "🎯 INVITA A ALGUIEN A UN CH SHOT", tipo: "malo" }
         ];
 
         let enGiro = false;
