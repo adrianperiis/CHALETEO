@@ -375,21 +375,27 @@
         document.addEventListener('DOMContentLoaded', crearLetrasFondo);
 
         function verificarBloqueoIdentidad() {
-            const pantalla = document.getElementById('pantalla-login');
-            const badge = document.getElementById('user-badge');
-            const badgeNombre = document.getElementById('badge-nombre');
-            const panelPerfil = document.getElementById('mi-perfil-panel');
-            const perfilNombre = document.getElementById('mi-perfil-nombre');
-            const perfilTokens = document.getElementById('mi-perfil-tokens');
+    const pantalla = document.getElementById('pantalla-login');
+    const badge = document.getElementById('user-badge');
+    const panelPerfil = document.getElementById('mi-perfil-panel');
 
-            if (!miUsuarioId) {
-                pantalla.classList.remove('hidden');
-                badge.classList.add('hidden');
-                panelPerfil.classList.add('hidden');
-            } else {
-                pantalla.classList.add('hidden');
-                if (usuariosGlobales[miUsuarioId]) {
-                    const usuarioActivo = usuariosGlobales[miUsuarioId];
+    // Comprobamos si hay usuario en el localStorage
+    const usuarioGuardado = localStorage.getItem('chaleteo_user_id');
+
+    if (!usuarioGuardado) {
+        // NO hay usuario: Forzamos la visibilidad absoluta
+        pantalla.style.display = 'flex';
+        pantalla.classList.remove('hidden');
+        if(badge) badge.classList.add('hidden');
+        if(panelPerfil) panelPerfil.classList.add('hidden');
+    } else {
+        // SÍ hay usuario: Ocultamos el login
+        pantalla.style.display = 'none';
+        pantalla.classList.add('hidden');
+        
+        // Cargamos los datos del usuario
+        if (usuariosGlobales[usuarioGuardado]) {
+            const usuarioActivo = usuariosGlobales[usuarioGuardado];
                     
                     badgeNombre.innerText = usuarioActivo.nombre;
                     badge.classList.remove('hidden');
